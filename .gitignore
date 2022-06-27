@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Raw data
+/data/oxford_pets_data/
+/data/stanford_dataset/
+/data/tsinghua_dog_dataset/
+/data/
