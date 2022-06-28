@@ -4,7 +4,8 @@ from torch.utils.data.dataset import Dataset
 class StanfordDogsDataset(Dataset):
 	def __init__(self, data_root, transforms=None):
 
-	# stuff
+		self.class_labels = None
+		self.images = None
 
 	def __getitem__(self, index):
 		# stuff
