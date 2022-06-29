@@ -1,7 +1,7 @@
 import os
 import sys
 import pandas as pd
-
+from PIL import Image
 def get_breeds_from_folder(data_dir):
 	""" Returns a list of all breeds """
 
@@ -25,8 +25,8 @@ def get_breeds_from_folder(data_dir):
 
 	return breeds
 
-def get_breed_images(data_dir, breed):
-
+def get_image_paths(data_dir, breed):
+	# IMPROVE: remove second for loop, and use os.walk + file to return path
 	path = os.path.join(sys.path[1], data_dir)
 	image_folder_path = None
 	image_files = None
@@ -41,9 +41,17 @@ def get_breed_images(data_dir, breed):
 			for (__, __, files) in os.walk(image_folder_path, topdown=False):
 				image_files = files
 
-	# maybe change this to return full path using os.join()
-	return image_folder_path, image_files
 
+	# maybe change this to return full path using os.join()
+	image_paths = [os.path.join(image_folder_path, f_name) for f_name in image_files]
+	return image_paths
+
+def get_breed_from_file(file_path):
+	head, tail = file_path.split('\\', 1)
+	print("head: {}".format(head))
+	print("tail: {}".format(tail))
+	breed = None
+	return breed
 
 if __name__ == '__main__':
 	'''
@@ -61,9 +69,7 @@ if __name__ == '__main__':
 	# print("TSINGHUA #{} BREEDS: {} \n\n".format(len(tsinghua_breeds), tsinghua_breeds),
 	# 	  "STANFORD #{} BREEDS: {} \n".format(len(stanford_breeds), stanford_breeds))
 
-	file_dir, files = get_breed_images(TSINGHUA_DATA_DIR, tsinghua_breeds[0])
+	images = get_image_paths(TSINGHUA_DATA_DIR, tsinghua_breeds[0])
 
-	print("Folder path: \"{}\"".format(file_dir))
-	print("Files: {}".format(files))
-
+	get_breed_from_file(images[0])
 
