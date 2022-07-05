@@ -36,9 +36,26 @@ def path_to_pd(img_dir_path):
 							   'file_name' : file_names})
 
 	unique_breed_names = data_frame['breed_name'].unique()
-	print(unique_breed_names)
+	print("Unique breed names: {}".format(unique_breed_names))
 
+	breed_num_dict = {}
+	# create breed + unique number for class label
+	for i, name in enumerate(unique_breed_names):
+		# print(name, i)
+		breed_num_dict.update({name: i + 1})
 
+	print(breed_num_dict)
+
+	new_series = {"label": []}
+	for breed_name in data_frame['breed_name']:
+
+		if breed_num_dict[breed_name]:
+			new_series["label"].append(breed_num_dict[breed_name])
+
+	# print("new series: {}".format(new_series))
+	new_series = pd.DataFrame(new_series)
+
+	data_frame = pd.concat([new_series, data_frame], axis=1)
 
 	return data_frame
 
@@ -55,5 +72,6 @@ if __name__ == '__main__':
 	df_tsing = path_to_pd(TSINGHUA_DATA_DIR_PATH)
 	df_stan = path_to_pd(STANFORD_DATA_DIR_PATH)
 
-	print(df_tsing)
-	print(df_stan["breed_name"])
+	pd.set_option('display.max_columns', None)
+	print(df_stan.head())
+	print(df_stan)
