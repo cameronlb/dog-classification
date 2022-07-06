@@ -1,0 +1,18 @@
+{
+    "os": "Windows-10-10.0.19044-SP0",
+    "python": "3.10.4",
+    "heartbeatAt": "2022-07-06T19:26:25.684372",
+    "startedAt": "2022-07-06T19:26:24.070773",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 3070 Laptop GPU",
+    "gpu_count": 1,
+    "cpu_count": 16,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\Users\\Cameron\\Documents\\python projects\\dog classification\\classify.py",
+    "codePath": "classify.py",
+    "host": "DESKTOP-7LROSG1",
+    "username": "Cameron",
+    "executable": "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python310\\python.exe"
+}

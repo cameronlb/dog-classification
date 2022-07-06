@@ -5,7 +5,7 @@ import pandas as pd
 import pathlib
 from PIL import Image
 
-def path_to_pd(img_dir_path):
+def path_to_pd_df(img_dir_path):
 
 	full_path = pathlib.Path(img_dir_path)
 	print("Converting data path into pandas data frame: \"{}\"".format(full_path))
@@ -36,7 +36,7 @@ def path_to_pd(img_dir_path):
 							   'file_name' : file_names})
 
 	unique_breed_names = data_frame['breed_name'].unique()
-	print("Unique breed names: {}".format(unique_breed_names))
+	# print("Unique breed names: {}".format(unique_breed_names))
 
 	breed_num_dict = {}
 	# create breed + unique number for class label
@@ -44,7 +44,7 @@ def path_to_pd(img_dir_path):
 		# print(name, i)
 		breed_num_dict.update({name: i + 1})
 
-	print(breed_num_dict)
+	# print(breed_num_dict)
 
 	new_series = {"label": []}
 	for breed_name in data_frame['breed_name']:
@@ -54,7 +54,6 @@ def path_to_pd(img_dir_path):
 
 	# print("new series: {}".format(new_series))
 	new_series = pd.DataFrame(new_series)
-
 	data_frame = pd.concat([new_series, data_frame], axis=1)
 
 	return data_frame
@@ -69,9 +68,8 @@ if __name__ == '__main__':
 	TSINGHUA_DATA_DIR_PATH = r"C:\Users\Cameron\Documents\python projects\dog " \
 							 r"classification\data\tsinghua_dataset\low-resolution"
 
-	df_tsing = path_to_pd(TSINGHUA_DATA_DIR_PATH)
-	df_stan = path_to_pd(STANFORD_DATA_DIR_PATH)
+	df_tsing = path_to_pd_df(TSINGHUA_DATA_DIR_PATH)
+	df_stan = path_to_pd_df(STANFORD_DATA_DIR_PATH)
 
-	pd.set_option('display.max_columns', None)
 	print(df_stan.head())
-	print(df_stan)
+	print(df_stan["label"])

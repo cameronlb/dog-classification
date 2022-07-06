@@ -11,10 +11,10 @@ import torchvision.transforms as transforms
 from tqdm import tqdm
 from torch import optim
 from torch.utils.data import Dataset, DataLoader
-from dataloaders import OxfordPetsDataset as CustomDataset
+from dataloaders import StanfordDogsDataset as StanfordDogs
 
 
-DATA_DIR = "custom_dog_datasets/oxford_pets_data/images"
+DATA_DIR = r"C:\Users\Cameron\Documents\python projects\dog classification\data\stanford_dataset"
 
 # Ensure deterministic behavior
 torch.backends.cudnn.deterministic = True
@@ -33,13 +33,13 @@ wandb.login()
 config = dict(
     image_size=(64, 64),
     data_split_ratio=0.7,
-    epochs=10,
+    epochs=50,
     classes=37,
     batch_size=32,
     learning_rate=0.005,
-    dataset="OXFORD_PETS",
+    dataset="STANFORD_DOGS",
     architecture="CNN",
-    run_name = "pretrained-resnet18")
+    run_name = "pretrained-resnet18-stanford-dogs")
 
 def model_pipeline(hyperparameters):
     with wandb.init(project="pytorch-dog-breed-classifier", entity="cambino", config=hyperparameters):
@@ -93,7 +93,7 @@ def get_data(data_dir, image_size, split_ratio):
     custom_data_transforms = transforms.Compose([transforms.Resize(image_size),
                                                  transforms.ToTensor()])
 
-    full_dataset = CustomDataset.OxfordPetsDataset(data_dir, pretrained_transforms)
+    full_dataset = StanfordDogs.StanfordDogsDataset(data_dir, pretrained_transforms)
 
     def make_train_test_data(data_set, split_ratio):
         # Test size based on train size
