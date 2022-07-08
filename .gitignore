@@ -133,3 +133,4 @@ dmypy.json
 /data/stanford_dataset/
 /data/tsinghua_dog_dataset/
 /data/
+/wandb/

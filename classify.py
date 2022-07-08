@@ -14,7 +14,7 @@ from torch.utils.data import Dataset, DataLoader
 from dataloaders import StanfordDogsDataset as StanfordDogs
 
 
-DATA_DIR = r"C:\Users\Cameron\Documents\python projects\dog classification\data\stanford_dataset"
+DATA_DIR = r"C:\Users\Cameron\Documents\python projects\dog classification\data\stanford_dataset\images"
 
 # Ensure deterministic behavior
 torch.backends.cudnn.deterministic = True
@@ -33,8 +33,8 @@ wandb.login()
 config = dict(
     image_size=(64, 64),
     data_split_ratio=0.7,
-    epochs=50,
-    classes=37,
+    epochs=3,
+    classes=120,
     batch_size=32,
     learning_rate=0.005,
     dataset="STANFORD_DOGS",
@@ -93,7 +93,7 @@ def get_data(data_dir, image_size, split_ratio):
     custom_data_transforms = transforms.Compose([transforms.Resize(image_size),
                                                  transforms.ToTensor()])
 
-    full_dataset = StanfordDogs.StanfordDogsDataset(data_dir, pretrained_transforms)
+    full_dataset = StanfordDogs.StanfordDogsDataset(data_dir, custom_data_transforms)
 
     def make_train_test_data(data_set, split_ratio):
         # Test size based on train size
@@ -114,8 +114,8 @@ def get_data(data_dir, image_size, split_ratio):
 
 def make_data_loaders(train_dataset, test_dataset, batch_size):
 
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_dataloader, test_dataloader
 
@@ -130,6 +130,7 @@ def train(model, dataloader, loss_fn, optimizer, config):
     batch_ct = 0
     for epoch in tqdm(range(config.epochs)):
         for _, (images, labels) in enumerate(dataloader):
+            print(images.shape, labels.shape)
             loss = train_batch(images, labels, model, optimizer, loss_fn)
             example_ct +=  len(images)
             batch_ct += 1
@@ -159,10 +160,11 @@ def train_log(model, loss, example_ct, epoch):
     # Where the magic happens
     wandb.log({"epoch": epoch, "loss": loss}, step=example_ct)
     wandb.watch(model)
-    print(f"Loss after " + str(example_ct).zfill(5) + f" examples: {loss:.3f}")
+    print(f"\nLoss after " + str(example_ct).zfill(5) + f" examples: {loss:.3f}")
 
 
 def test(model, test_loader):
+    print("--------Evaluating model--------")
     model.eval()
 
     # Run the model on some test examples

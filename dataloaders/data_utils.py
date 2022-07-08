@@ -1,8 +1,9 @@
 import os
 import sys
 import re
-import pandas as pd
 import pathlib
+import numpy as np
+import pandas as pd
 from PIL import Image
 
 def path_to_pd_df(img_dir_path):
@@ -18,6 +19,7 @@ def path_to_pd_df(img_dir_path):
 	folder_names = []
 	file_paths = []
 	file_names = []
+	file_ext = []
 	# fname is absolute file path
 	for fname in files:
 		if fname.is_file():
@@ -25,15 +27,18 @@ def path_to_pd_df(img_dir_path):
 			file_paths.append(fname)
 			file_names.append(fname.parts[-1])
 			folder_names.append(fname.parts[-2])
+			file_ext.append(pathlib.Path(fname).suffix)
 
 			match = re.search(breed_match, fname.parts[-2])
 			if match:
 				breed_names.append(match.group())
 
+
 	data_frame = pd.DataFrame({'breed_name': breed_names,
 							   'folder_name': folder_names,
 							   'file_path' : file_paths,
-							   'file_name' : file_names})
+							   'file_name' : file_names,
+							   'file_ext': file_ext})
 
 	unique_breed_names = data_frame['breed_name'].unique()
 	# print("Unique breed names: {}".format(unique_breed_names))
@@ -72,4 +77,4 @@ if __name__ == '__main__':
 	df_stan = path_to_pd_df(STANFORD_DATA_DIR_PATH)
 
 	print(df_stan.head())
-	print(df_stan["label"])
+	print(df_stan["breed_name"].unique())
