@@ -25,16 +25,12 @@ class StanfordDogsDataset(Dataset):
 
 		# one image in dataset has 4 channels ??????
 		if np.array(img).shape[2] == 4:
-			print(np.array(img).shape)
 			img = img.convert("RGB")
-			print(self.images[index])
+			# print(self.images[index])
 
 		# applying transforms
 		if self.transform:
 			img = self.transform(img)
-
-			# if img.shape[0] >= 4:
-			# 	dadad
 
 		return img, label
 
@@ -53,8 +49,7 @@ if __name__ == '__main__':
 
 	data_loader = DataLoader(stanford_dogs, batch_size=10, shuffle=False)
 
+
 	batch_imgs, batch_labels = next(iter(data_loader))
 
-	for _, (images, labels) in enumerate(data_loader):
-		if images.shape[1] == 4:
-			print(images.shape, labels.shape)
+	print(len(stanford_dogs))

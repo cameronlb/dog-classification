@@ -55,7 +55,7 @@ def path_to_pd_df(img_dir_path):
 	for breed_name in data_frame['breed_name']:
 
 		if breed_num_dict[breed_name]:
-			new_series["label"].append(breed_num_dict[breed_name])
+			new_series["label"].append(breed_num_dict[breed_name] - 1)
 
 	# print("new series: {}".format(new_series))
 	new_series = pd.DataFrame(new_series)
@@ -78,3 +78,4 @@ if __name__ == '__main__':
 
 	print(df_stan.head())
 	print(df_stan["breed_name"].unique())
+	print(df_stan["label"])

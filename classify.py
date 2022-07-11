@@ -25,15 +25,16 @@ torch.cuda.manual_seed_all(hash("so runs are repeatable") % 2**32 - 1)
 
 # Device configuration
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cude:0")
 print(f"Using {device} device")
 
 # Weights and bias login
 wandb.login()
 
 config = dict(
-    image_size=(64, 64),
+    image_size=(16, 16),
     data_split_ratio=0.7,
-    epochs=3,
+    epochs=10,
     classes=120,
     batch_size=32,
     learning_rate=0.005,
@@ -73,6 +74,13 @@ def make(config):
 
     # Pretrained model
     model = torchvision.models.resnet18(pretrained=True)
+
+    # Put model on CPU or GPU
+    model.to(device)
+
+    # Change pretrained final layer model
+    model.fc = nn.Linear(512, config.classes)
+
     model.train(True)
 
     # Make the loss function (criterion) and optimizer
@@ -93,7 +101,7 @@ def get_data(data_dir, image_size, split_ratio):
     custom_data_transforms = transforms.Compose([transforms.Resize(image_size),
                                                  transforms.ToTensor()])
 
-    full_dataset = StanfordDogs.StanfordDogsDataset(data_dir, custom_data_transforms)
+    full_dataset = StanfordDogs.StanfordDogsDataset(data_dir, pretrained_transforms)
 
     def make_train_test_data(data_set, split_ratio):
         # Test size based on train size
@@ -108,14 +116,15 @@ def get_data(data_dir, image_size, split_ratio):
         return train_data, test_data
 
     train_data, test_data = make_train_test_data(full_dataset, split_ratio)
+    print("Train data size: {}, Test data size: {}".format(len(train_data), len(test_data)))
     return train_data, test_data
 
 
 
 def make_data_loaders(train_dataset, test_dataset, batch_size):
 
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
-    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
     return train_dataloader, test_dataloader
 
@@ -130,7 +139,6 @@ def train(model, dataloader, loss_fn, optimizer, config):
     batch_ct = 0
     for epoch in tqdm(range(config.epochs)):
         for _, (images, labels) in enumerate(dataloader):
-            print(images.shape, labels.shape)
             loss = train_batch(images, labels, model, optimizer, loss_fn)
             example_ct +=  len(images)
             batch_ct += 1
@@ -142,7 +150,9 @@ def train(model, dataloader, loss_fn, optimizer, config):
 def train_batch(images, labels, model, optimizer, loss_fn):
     images = images.to(device)
     labels = labels.to(device)
+
     model.cuda()
+
     # Forward pass ➡
     outputs = model(images)
     loss = loss_fn(outputs, labels)
@@ -160,7 +170,7 @@ def train_log(model, loss, example_ct, epoch):
     # Where the magic happens
     wandb.log({"epoch": epoch, "loss": loss}, step=example_ct)
     wandb.watch(model)
-    print(f"\nLoss after " + str(example_ct).zfill(5) + f" examples: {loss:.3f}")
+    print(f"Loss after " + str(example_ct).zfill(5) + f" examples: {loss:.3f}")
 
 
 def test(model, test_loader):
