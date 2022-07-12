@@ -32,15 +32,18 @@ print(f"Using {device} device")
 wandb.login()
 
 config = dict(
-    image_size=(16, 16),
+    image_size=(32, 32),
     data_split_ratio=0.7,
-    epochs=10,
+    epochs=50,
     classes=120,
-    batch_size=32,
+    batch_size=64,
     learning_rate=0.005,
     dataset="STANFORD_DOGS",
     architecture="CNN",
-    run_name = "pretrained-resnet18-stanford-dogs")
+    pretrained_name = "resnet18")
+
+print(config)
+
 
 def model_pipeline(hyperparameters):
     with wandb.init(project="pytorch-dog-breed-classifier", entity="cambino", config=hyperparameters):
@@ -48,7 +51,7 @@ def model_pipeline(hyperparameters):
         config = wandb.config
 
         # set run name
-        wandb.run.name = config.run_name
+        wandb.run.name = str(config)
         wandb.run.save()
 
         # make the model, data, and optimization problem
