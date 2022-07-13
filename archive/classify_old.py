@@ -13,8 +13,8 @@ from torch import optim
 from torch.utils.data import Dataset, DataLoader
 from data_loader import StanfordDogsDataset as StanfordDogs
 from data_loader.data_loaders import get_data, make_data_loaders
-from test import test
-from train import train
+from test_old import test
+from train_old import train
 
 DATA_DIR = r"C:\Users\Cameron\Documents\python projects\dog classification\data\stanford_dataset\images"
 
