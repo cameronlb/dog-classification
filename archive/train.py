@@ -1,6 +1,8 @@
+import torch
 import wandb
 from tqdm import tqdm
 
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def train(model, dataloader, loss_fn, optimizer, config):
     # Tell wandb to watch what the model gets up to: gradients, weights, and more!
@@ -11,6 +13,11 @@ def train(model, dataloader, loss_fn, optimizer, config):
     example_ct = 0  # number of examples seen
     batch_ct = 0
     for epoch in tqdm(range(config.epochs)):
+        print(f'Epoch {epoch}/{config.epochs - 1}')
+        print('-' * 10)
+
+        model.train()
+
         for _, (images, labels) in enumerate(dataloader):
             loss = train_batch(images, labels, model, optimizer, loss_fn)
             example_ct +=  len(images)
@@ -21,8 +28,8 @@ def train(model, dataloader, loss_fn, optimizer, config):
                 train_log(model, loss, example_ct, epoch)
 
 def train_batch(images, labels, model, optimizer, loss_fn):
-    images = images.to(device)
-    labels = labels.to(device)
+    images = images.to(DEVICE)
+    labels = labels.to(DEVICE)
 
     model.cuda()
 

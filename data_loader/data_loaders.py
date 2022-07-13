@@ -1,6 +1,6 @@
 import torch
 import torchvision.transforms as transforms
-from dataloaders import StanfordDogsDataset as StanfordDogs
+from data_loader import StanfordDogsDataset as StanfordDogs
 from torch.utils.data import DataLoader
 
 def get_data(data_dir, image_size, split_ratio):

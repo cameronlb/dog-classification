@@ -1,0 +1,3 @@
+use stanford dataset and tsingua dataset in conjuction to produce validation data for one another.
+validation set will remove any bias.
+

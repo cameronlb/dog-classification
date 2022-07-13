@@ -65,7 +65,7 @@ def path_to_pd_df(img_dir_path):
 
 if __name__ == '__main__':
 	'''
-	data utility functions used for processing data with in the data directory for dataloaders.
+	data utility functions used for processing data with in the data directory for data_loader.
 	'''
 
 	STANFORD_DATA_DIR_PATH = r"C:\Users\Cameron\Documents\python projects\dog " \

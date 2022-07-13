@@ -1,6 +1,7 @@
 import torch
 import wandb
 
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def test(model, test_loader):
     print("--------Evaluating model--------")
@@ -10,7 +11,7 @@ def test(model, test_loader):
     with torch.no_grad():
         correct, total = 0, 0
         for images, labels in test_loader:
-            images, labels = images.to(device), labels.to(device)
+            images, labels = images.to(DEVICE), labels.to(DEVICE)
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -24,4 +25,4 @@ def test(model, test_loader):
     # Save the model in the exchangeable ONNX format
     torch.onnx.export(model, images, "model.onnx")
     wandb.save("model.onnx")
-    torch.save(model.state_dict(), "model_state_dict.pth")
+    torch.save(model.state_dict(), "../model_state_dict.pth")
