@@ -13,7 +13,7 @@ def train_test_model(model, dataloaders, criterion, optimizer, num_epochs, devic
 	best_acc = 0.0
 
 	for epoch in range(num_epochs):
-		print("Epoch {}/{}".format(epoch, num_epochs - 1))
+		print("Epoch {}/{}".format(epoch + 1, num_epochs))
 		print("-" * 10)
 
 		for phase in ["train", "test"]:
