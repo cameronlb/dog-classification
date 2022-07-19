@@ -4,6 +4,9 @@ import time
 import torch
 
 # pass dataloaders as dictionary where: dataloaders{ train: train_data, test: test_data}
+import wandb
+
+
 def train_test_model(model, dataloaders, criterion, optimizer, num_epochs, device=None):
 	since = time.time()
 
@@ -19,10 +22,8 @@ def train_test_model(model, dataloaders, criterion, optimizer, num_epochs, devic
 		for phase in ["train", "test"]:
 			if phase == "train":
 				model.train()
-				print(phase)
 			else:
 				model.eval()
-				print(phase)
 
 			running_loss = 0.0
 			running_corrects = 0.0
@@ -42,7 +43,6 @@ def train_test_model(model, dataloaders, criterion, optimizer, num_epochs, devic
 
 						# loss function
 						loss = criterion(outputs, labels)
-
 						_, predictions = torch.max(outputs, 1)
 
 					else:
@@ -65,6 +65,9 @@ def train_test_model(model, dataloaders, criterion, optimizer, num_epochs, devic
 			epoch_loss = running_loss / len(dataloaders[phase].dataset)
 			epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
 
+			# Log stuff
+			wandb.log({f"{phase} epoch loss": loss})
+			wandb.log({f"{phase} epoch accuracy": epoch_acc})
 			print("{} loss: {:.4f} accuracy: {:.4f}".format(phase, epoch_loss, epoch_acc))
 
 			# deep copy model

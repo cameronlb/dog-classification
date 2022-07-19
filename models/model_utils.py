@@ -16,11 +16,16 @@ def initialize_model(model, num_classes, config=None):
         if param.requires_grad == True:
             print("\t", name)
 
-    if config.optimizer == "SGD":
-        # pass in params/layers to optim to optimization only
-        optimizer = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
-    else:
+    if config == None:
         # Default optimizer
         print("No optimizer found in config, using default: SGD")
         optimizer = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
+
+    elif config.optimizer == "SGD":
+        # pass in params/layers to optim to optimization only
+        optimizer = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
+
+    elif config.optimizer == "ADAM":
+        optimizer = optim.Adam(params_to_update, lr=0.001)
+
     return model, optimizer

@@ -3,6 +3,7 @@ import time
 import torch
 import torch.utils.data
 import torchvision
+import wandb
 from torch import nn, optim
 from torchvision import datasets, models, transforms
 
@@ -17,7 +18,22 @@ DATA_DIR = r"C:\Users\Cameron\Documents\python projects\dog classification\data\
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 criterion = nn.CrossEntropyLoss()
 optimizer = None
-num_epochs = 10
+num_epochs = 25
+batch_size = 32
+config = {}
+
+wandb.login()
+
+wandb.init(project="pytorch-dog-breed-classifier",
+           entity="cambino",
+           config = {"epochs": num_epochs,
+                     "batch_size": batch_size,
+                     "criterion": "Cross Entropy Loss",
+                     "pretrained_name": "Efficient Net",
+                     "loss fn": "SGD"})
+
+wandb.run.name = "Efficient Net: ..."
+wandb.run.save()
 
 # Data augmentation and normalization for training
 
@@ -30,45 +46,63 @@ num_epochs = 10
 #        transforms.Resize(input_size),
 #        transforms.CenterCrop(input_size)
 ######### ######### ######### ######### ######### #########
-data_transforms = transforms.Compose([transforms.Resize((224, 224)),
+data_transforms = {"train": transforms.Compose([transforms.Resize((224, 224)),
+                                                transforms.RandomHorizontalFlip(),
+                                                transforms.ToTensor(),
+                                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                                                ]),
+                   "test": transforms.Compose([transforms.Resize((224, 224)),
                                                 transforms.ToTensor(),
                                                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
                                                 ])
+                   }
 
-dataset = StanfordDogsDataset(DATA_DIR, data_transforms)
-label_names = dataset.breed_names
+
+##### CREATING DATASETS #####
+# Creating train and test sets, pytorch has no easy way to apply transforms to train + test
+train_dataset = StanfordDogsDataset(DATA_DIR, data_transforms["train"])
+test_dataset = StanfordDogsDataset(DATA_DIR, data_transforms["test"])
+
+label_names = train_dataset.breed_names
 num_classes = len(label_names)
+
+indices = torch.randperm(len(train_dataset))
+test_size = len(train_dataset) // 4
+
+train_dataset = torch.utils.data.Subset(train_dataset, indices[:-test_size])
+test_dataset = torch.utils.data.Subset(test_dataset, indices[:-test_size])
 
 
 ##### CREATE DATALOADERS #####
-train, test, val = dataset.get_train_test_val(0.7)
-train_data_loader = torch.utils.data.DataLoader(train, batch_size=36, shuffle=True)
-test_data_loader = torch.utils.data.DataLoader(test, batch_size = 36, shuffle=True)
-val_data_loader = torch.utils.data.DataLoader(val, batch_size = 36, shuffle=True)
+train_data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size = batch_size, shuffle=True)
 
 # dict of dataloaders for training and test pass
 dataloaders = {
                 "train": train_data_loader,
                 "test": test_data_loader,
-                "val": val_data_loader
                }
 
-########## Visualise Dataset ##########
+##### VISUALIZE DATASET #####
 img_batch, label = next(iter(train_data_loader))
 label_names = [label_names[idx] for idx in label]
 image_utils.show_batch_images(img_batch, label_names, True)
 
 
+##### INITIALIZE MODEL #####
 model_effecientnet = torchvision.models.efficientnet_b0(pretrained=True)
 
-updated_pretrained_model, optimizer = model_utils.initialize_model(model_effecientnet, num_classes)
+model_effecientnet, optimizer = model_utils.initialize_model(model_effecientnet, num_classes)
 
-updated_pretrained_model.to(DEVICE)
+model_effecientnet.to(DEVICE)
+
+##### TRAIN + TEST MODEL #####
+wandb.watch(model_effecientnet, log_freq=100)
 
 trained_model, train_history = train_test_model(model_effecientnet, dataloaders, criterion, optimizer, num_epochs,
 												device=DEVICE)
 
-print(train_history)
 
-torch.onnx.export(trained_model, "model.onnx")
-torch.save(trained_model.state_dict(), "../model_state_dict.pth")
+##### SAVE MODELS #####
+torch.onnx.export(trained_model, img_batch.to(DEVICE), "model.onnx")
+torch.save(trained_model.state_dict(), "model_state_dict.pth")

@@ -16,7 +16,9 @@ class StanfordDogsDataset(Dataset):
 		self.class_labels = self.df["label"].tolist()
 		self.images = self.df["file_path"].tolist()
 		self.breeds = self.df["breed_name"].tolist()
-		self.transform = transforms
+		self.transforms = transforms
+		self.train_flag = None
+		self.test_flag = None
 
 	def __getitem__(self, index):
 
@@ -29,25 +31,14 @@ class StanfordDogsDataset(Dataset):
 			img = img.convert("RGB")
 			# print(self.images[index])
 
-		# applying transforms
-		if self.transform:
-			img = self.transform(img)
+		if self.transforms:
+			img = self.transforms(img)
 
 		return img, label
 
 	def __len__(self):
 		return len(self.class_labels)
 
-	def get_train_test_val(self, ratio):
-		# make train, test, validation sets based on train set size
-		train_size = int(ratio * len(self))
-		# +1 due to odd dataset size, int() rounds down
-		test_size = int((len(self) - train_size) / 2) + 1
-		val_size = int(((len(self) - train_size) / 2))
-
-		train, test, val = torch.utils.data.dataset.random_split(self, [train_size, test_size, val_size])
-
-		return train, test, val
 
 
 if __name__ == '__main__':
