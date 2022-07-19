@@ -9,6 +9,7 @@ from torchvision import datasets, models, transforms
 ##### Custom imports #####
 import image_utils
 from data_loader.StanfordDogsDataset import StanfordDogsDataset
+from models import model_utils
 from train_test_model import train_test_model
 ##########
 
@@ -58,29 +59,9 @@ label_names = [label_names[idx] for idx in label]
 image_utils.show_batch_images(img_batch, label_names, True)
 
 
-def initialize_model(model):
-    # disable all gradients in model to false, so no training occurs on those layers
-    for param in model.parameters():
-        param.requires_grad = False
-
-    # change fully connected layer of pretrained model
-    model_effecientnet.classifier[1] = nn.Linear(in_features=1280, out_features=num_classes, bias=True)
-
-    # Loop to find params/layers of model that have gradients set to true/active
-    params_to_update = model_effecientnet.parameters()
-    print("Params to learn: ")
-    for name, param in model_effecientnet.named_parameters():
-        if param.requires_grad == True:
-            print("\t", name)
-
-    # pass in params/layers to optim to optimization only
-    optimizer = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
-
-    return model, optimizer
-
 model_effecientnet = torchvision.models.efficientnet_b0(pretrained=True)
 
-updated_pretrained_model, optimizer = initialize_model(model_effecientnet)
+updated_pretrained_model, optimizer = model_utils.initialize_model(model_effecientnet, num_classes)
 
 updated_pretrained_model.to(DEVICE)
 
