@@ -1,6 +1,24 @@
 from torch import optim, nn
 
 
+def initialize_feature_extractor(model):
+    """Function to initialize pretrained model as fixed feature extractor"""
+    print(model)
+    num_of_params = 0
+    # efficient-net 213 params
+    for param in model.parameters():
+        num_of_params += 1
+        if num_of_params > 150:
+            param.requires_grad = True
+        else:
+            param.requires_grad = False
+
+    num_params_to_train = num_of_params // 4
+    print(f"number of params/layers: {num_of_params}")
+    print(f"number of params/layers to train: {num_params_to_train}")
+
+    return model
+
 def initialize_model(model, num_classes, config=None):
     # disable all gradients in model to false, so no training occurs on those layers
     for param in model.parameters():
@@ -29,3 +47,4 @@ def initialize_model(model, num_classes, config=None):
         optimizer = optim.Adam(params_to_update, lr=0.001)
 
     return model, optimizer
+
