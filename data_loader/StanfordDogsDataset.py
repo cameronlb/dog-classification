@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 from PIL import Image
 from torchvision.transforms import transforms
+from torch.nn.functional import one_hot
 import time
 
 from data_loader import data_utils
@@ -16,13 +17,14 @@ class StanfordDogsDataset(Dataset):
 		self.class_labels = self.df["label"].tolist()
 		self.images = self.df["file_path"].tolist()
 		self.breeds = self.df["breed_name"].tolist()
+		self.one_hot_labels = torch.nn.functional.one_hot(torch.as_tensor(self.class_labels), len(self.breeds))
 		self.transforms = transforms
 		self.train_flag = None
 		self.test_flag = None
 
 	def __getitem__(self, index):
 
-		label = self.class_labels[index]
+		label = self.one_hot_labels[index]
 		img = Image.open(self.images[index])
 		breed = self.breeds[index]
 
@@ -33,6 +35,7 @@ class StanfordDogsDataset(Dataset):
 
 		if self.transforms:
 			img = self.transforms(img)
+
 
 		return img, label
 
@@ -51,10 +54,8 @@ if __name__ == '__main__':
 
 	stanford_dogs = StanfordDogsDataset(DATA_PATH, custom_data_transforms)
 
-	train, test, val = stanford_dogs.get_train_test_val(0.7)
-
-	print(f"Train: {len(train)}, Test: {len(test)}, Validation: {len(val)}")
-	print(train)
+	print(stanford_dogs.one_hot_labels)
+	print(stanford_dogs.one_hot_labels[1])
 
 	data_loader = DataLoader(stanford_dogs, batch_size=10, shuffle=False)
 

@@ -10,7 +10,10 @@ import numpy as np
 ##### Custom imports #####
 import image_utils
 from data_loader.StanfordDogsDataset import StanfordDogsDataset
+from models.DogBreedClassifier import DogBreedClassifier
+
 ##########################
+
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 DATA_DIR = r"C:\Users\Cameron\Documents\python projects\dog classification\data\stanford_dataset\images"
 
@@ -32,9 +35,9 @@ print(images.shape)
 
 ##### LOAD MODEL #####
 model = torch.jit.load("trained_model_scripted.pt")
+# model = DogBreedClassifier()
 model.load_state_dict(torch.load("model_state_dict.pth"))
 model.to("cpu")
-print(model)
 
 model.eval()
 
@@ -60,18 +63,21 @@ def image_to_input(img_path):
 
 	return input_tensor
 
-model_input = image_to_input("images/shiba_on_stairs.jpg")
+model_input = image_to_input("images/dudley_with_sticks.jpg")
 
-print(model_input.shape)
+soft_max = nn.Softmax(dim=1)
 
 model_output = model(model_input)
-print(model_output)
+model_output = soft_max(model_output)
+_, model_predictions = torch.max(model_output, 1)
 
-predictions = model_output.detach().numpy()
-
-print(predictions.shape)
-print(label_names)
+print(model_predictions)
 
 for idx, breed in enumerate(label_names):
-	prediction = predictions[0, idx]
-	print(f"Breed {breed}, predicted with {prediction}.")
+	prediction = model_output[0, idx]
+	print(f"{breed}, predicted with {prediction}.")
+
+prediction = np.argmax(model_predictions[0])
+print(prediction)
+print(model_predictions[0, prediction])
+print(label_names[prediction])

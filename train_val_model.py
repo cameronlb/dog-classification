@@ -94,6 +94,7 @@ def train_val_model(model, dataloaders, criterion, optimizer, num_epochs, device
 			if phase == "val" and epoch_acc > best_acc:
 				best_acc = epoch_acc
 				print("new best accuracy achieved: {:.4f}".format(best_acc))
+				wandb.log({"new best accuracy": best_acc, "epoch": epoch})
 				best_model_wts = copy.deepcopy(model.state_dict())
 			if phase == "val":
 				val_acc_history.append(epoch_acc)
@@ -103,6 +104,7 @@ def train_val_model(model, dataloaders, criterion, optimizer, num_epochs, device
 	time_elapsed = time.time() - since
 	print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 	print('Best val Acc: {:4f}'.format(best_acc))
+	wandb.log({"best accuracy achieved": best_acc})
 
 	# load best model weights
 	model.load_state_dict(best_model_wts)

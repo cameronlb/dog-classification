@@ -17,9 +17,9 @@ from train_val_model import train_val_model
 
 DATA_DIR = r"C:\Users\Cameron\Documents\python projects\dog classification\data\stanford_dataset\images"
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-criterion = nn.CrossEntropyLoss()
+loss_function = nn.CrossEntropyLoss()
 optimizer = None
-num_epochs = 30
+num_epochs = 50
 batch_size = 32
 image_size = (224, 224)
 learning_rate = 0.0001
@@ -30,7 +30,7 @@ config = {"epochs": num_epochs,
           "input_size": image_size,
           "learning_rate": learning_rate,
           "momentum": momentum,
-          "loss_function": criterion._get_name(),
+          "loss_function": loss_function._get_name(),
           "optimizer": optimizer,
           "train_data_transforms": None,
           "val_data_transforms": None,
@@ -41,7 +41,7 @@ config = {"epochs": num_epochs,
 
 
 # may need to add random-crops
-data_transforms = {"train": transforms.Compose([transforms.RandomResizedCrop(image_size),
+data_transforms = {"train": transforms.Compose([transforms.Resize(image_size),
                                                 transforms.RandomHorizontalFlip(),
                                                 transforms.ToTensor(),
                                                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
@@ -62,10 +62,11 @@ label_names = train_dataset.breed_names
 num_classes = len(label_names)
 
 indices = torch.randperm(len(train_dataset))
-val_size = len(train_dataset) // 4
+val_size = len(train_dataset) // 5
 
 train_dataset = torch.utils.data.Subset(train_dataset, indices[:-val_size])
 val_dataset = torch.utils.data.Subset(val_dataset, indices[-val_size:])
+# need to make another test set form train set, to test final model
 
 config["train_data_size"] = len(train_dataset)
 config["val_data_size"] = len(val_dataset)
@@ -86,26 +87,21 @@ img_batch, label = next(iter(train_data_loader))
 label_names = [label_names[idx] for idx in label]
 train_imgs = image_utils.show_batch_images(img_batch, label_names, True)
 
-
-##### INITIALIZE MODEL #####
-##### OLD FIXED FEATURE EXTRACTOR MODEL #####
-# model_effecientnet = torchvision.models.efficientnet_b0(pretrained=True)
-# model_effecientnet, optimizer = model_utils.initialize_model(model_effecientnet, num_classes)
-
-
-model_custom = DogBreedClassifier()
-
-##### check model params for gradient == true #####
-params_to_update = model_custom.parameters()
+##### MODEL INIT #####
+model = DogBreedClassifier()
+print(model)
+#check model params for gradient == true
+params_to_update = model.parameters()
 print("Params to learn: ")
-for name, param in model_custom.named_parameters():
+for name, param in model.named_parameters():
     if param.requires_grad == True:
         print("\t", name)
+print("-------------------------------------\n")
 
-params_to_update = model_custom.parameters()
 optimizer = optim.SGD(params_to_update, lr=learning_rate, momentum=momentum)
+# optimizer = optim.Adam(params_to_update, lr=learning_rate)
 
-model_custom.to(DEVICE)
+model.to(DEVICE)
 
 config["optimizer"] = str(optimizer)
 config["train_data_transforms"] = str(data_transforms["train"])
@@ -120,10 +116,12 @@ wandb.init(project="pytorch-dog-breed-classifier",
            config = config)
 
 
-wandb.watch(model_custom, log_freq=100)
+wandb.watch(model, log_freq=100)
 
-trained_model, train_history = train_val_model(model_custom, dataloaders, criterion, optimizer, num_epochs,
-												device=DEVICE)
+wandb.log({"train examples": train_imgs})
+
+trained_model, train_history = train_val_model(model, dataloaders, loss_function, optimizer, num_epochs,
+                                               device=DEVICE)
 
 
 ##### SAVE MODELS #####

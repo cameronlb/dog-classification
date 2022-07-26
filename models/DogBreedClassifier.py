@@ -12,8 +12,7 @@ class DogBreedClassifier(nn.Module):
         self.connected_layers = nn.Sequential(
             nn.Linear(1000, 256),
             nn.Dropout(0.75),
-            nn.Linear(256, 120),
-            nn.ReLU()
+            nn.Linear(256, 120)
         )
 
     def forward(self, x):
@@ -22,3 +21,11 @@ class DogBreedClassifier(nn.Module):
         return x
 
 
+if __name__ == '__main__':
+
+    dummy_input = torch.zeros([32, 3, 224, 224])
+
+    model = DogBreedClassifier()
+    print(model)
+
+    model.forward(dummy_input)

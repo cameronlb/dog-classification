@@ -3,7 +3,6 @@ from torch import optim, nn
 
 def initialize_feature_extractor(model):
     """Function to initialize pretrained model as fixed feature extractor"""
-    print(model)
     num_of_params = 0
     # efficient-net 213 params
     for param in model.parameters():
