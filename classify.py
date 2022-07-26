@@ -5,6 +5,7 @@ import torch.utils.data
 import torchvision
 import wandb
 from torch import nn, optim
+from torch.optim import lr_scheduler
 from torchvision import datasets, models, transforms
 
 ##### Custom imports #####
@@ -22,8 +23,8 @@ optimizer = None
 num_epochs = 50
 batch_size = 32
 image_size = (224, 224)
-learning_rate = 0.0001
-momentum = 0.9
+learning_rate = 0.001
+momentum = None
 
 config = {"epochs": num_epochs,
           "batch_size": batch_size,
@@ -98,8 +99,10 @@ for name, param in model.named_parameters():
         print("\t", name)
 print("-------------------------------------\n")
 
-optimizer = optim.SGD(params_to_update, lr=learning_rate, momentum=momentum)
-# optimizer = optim.Adam(params_to_update, lr=learning_rate)
+optimizer = optim.Adam(params_to_update, lr=learning_rate)
+
+# Decay LR by a factor of 0.1 every 7 epochs
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 model.to(DEVICE)
 
@@ -120,12 +123,13 @@ wandb.watch(model, log_freq=100)
 
 wandb.log({"train examples": train_imgs})
 
-trained_model, train_history = train_val_model(model, dataloaders, loss_function, optimizer, num_epochs,
+trained_model, train_history = train_val_model(model, dataloaders, loss_function, optimizer, exp_lr_scheduler, num_epochs,
                                                device=DEVICE)
 
 
 ##### SAVE MODELS #####
-torch.onnx.export(trained_model, img_batch.to(DEVICE), "model.onnx")
+dummy_input = torch.zeros([batch_size, 3, 224, 224])
+torch.onnx.export(trained_model, dummy_input.to(DEVICE), "model.onnx")
 model_scripted = torch.jit.script(trained_model)
 model_scripted.save("trained_model_scripted.pt")
 torch.save(trained_model.state_dict(), "model_state_dict.pth")

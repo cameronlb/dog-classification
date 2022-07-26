@@ -7,7 +7,7 @@ import torch
 import wandb
 
 
-def train_val_model(model, dataloaders, criterion, optimizer, num_epochs, device=None):
+def train_val_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs, device=None):
 	since = time.time()
 
 	val_acc_history = []
@@ -53,6 +53,7 @@ def train_val_model(model, dataloaders, criterion, optimizer, num_epochs, device
 						# logging
 						num_train_examples += inputs.shape[0]
 						wandb.log({f"train examples seen": num_train_examples, "epoch": epoch + 1})
+						wandb.log({"train loss": loss})
 
 					else:
 						outputs = model(inputs)
@@ -61,6 +62,7 @@ def train_val_model(model, dataloaders, criterion, optimizer, num_epochs, device
 						# logging
 						num_val_examples += inputs.shape[0]
 						wandb.log({f"val examples seen": num_val_examples, "epoch": epoch + 1})
+						wandb.log({"val loss": loss})
 
 					_, predictions = torch.max(outputs, 1)
 
@@ -78,6 +80,8 @@ def train_val_model(model, dataloaders, criterion, optimizer, num_epochs, device
 				wandb.log({f"{phase} running loss": running_loss,
 						   f"{phase} running correct predictions": running_corrects,
 						   "epoch": epoch + 1})
+			if phase == "train":
+				scheduler.step()
 
 			epoch_loss = running_loss / len(dataloaders[phase].dataset)
 			epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)

@@ -24,7 +24,7 @@ class StanfordDogsDataset(Dataset):
 
 	def __getitem__(self, index):
 
-		label = self.one_hot_labels[index]
+		label = self.class_labels[index]
 		img = Image.open(self.images[index])
 		breed = self.breeds[index]
 
@@ -35,7 +35,6 @@ class StanfordDogsDataset(Dataset):
 
 		if self.transforms:
 			img = self.transforms(img)
-
 
 		return img, label
 
