@@ -1,22 +1,16 @@
 from torch import optim, nn
 
-
 def initialize_feature_extractor(model):
     """Function to initialize pretrained model as fixed feature extractor"""
-
     num_of_params = 0
     # efficient-net 213 params
     for param in model.parameters():
-        # num_of_params += 1
-        param.requires_grad = False
-        # if num_of_params > 143:
-        #     param.requires_grad = True
-        # else:
-        #     param.requires_grad = False
-
-    num_params_to_train = num_of_params // 4
-    print(f"number of params/layers: {num_of_params}")
-    print(f"number of params/layers to train: {num_params_to_train}")
+        num_of_params += 1
+        # param.requires_grad = False
+        if num_of_params > 143:
+            param.requires_grad = True
+        else:
+            param.requires_grad = False
 
     return model
 

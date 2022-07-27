@@ -19,7 +19,7 @@ data_transforms = transforms.Compose([transforms.Resize(image_size),
 ##### TRAIN DATASET #####
 train_dataset = StanfordDogsDataset(DATA_DIR, data_transforms)
 indices = torch.randperm(len(train_dataset))
-val_size = len(train_dataset) // 5
+val_size = len(train_dataset) // 4
 train_dataset = torch.utils.data.Subset(train_dataset, indices[:-val_size])
 
 ##### DATALOADER #####

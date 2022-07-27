@@ -20,10 +20,10 @@ DATA_DIR = r"C:\Users\Cameron\Documents\python projects\dog classification\data\
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 loss_function = nn.CrossEntropyLoss()
 optimizer = None
-num_epochs = 50
+num_epochs = 25
 batch_size = 32
 image_size = (224, 224)
-learning_rate = 0.001
+learning_rate = 0.0001
 momentum = None
 
 config = {"epochs": num_epochs,
@@ -63,7 +63,7 @@ label_names = train_dataset.breed_names
 num_classes = len(label_names)
 
 indices = torch.randperm(len(train_dataset))
-val_size = len(train_dataset) // 5
+val_size = len(train_dataset) // 4
 
 train_dataset = torch.utils.data.Subset(train_dataset, indices[:-val_size])
 val_dataset = torch.utils.data.Subset(val_dataset, indices[-val_size:])
@@ -102,7 +102,7 @@ print("-------------------------------------\n")
 optimizer = optim.Adam(params_to_update, lr=learning_rate)
 
 # Decay LR by a factor of 0.1 every 7 epochs
-exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=14, gamma=0.1)
 
 model.to(DEVICE)
 
@@ -123,16 +123,19 @@ wandb.watch(model, log_freq=100)
 
 wandb.log({"train examples": train_imgs})
 
-trained_model, train_history = train_val_model(model, dataloaders, loss_function, optimizer, exp_lr_scheduler, num_epochs,
+trained_model, train_history = train_val_model(model, dataloaders, loss_function, optimizer, num_epochs, scheduler=exp_lr_scheduler,
                                                device=DEVICE)
 
 
 ##### SAVE MODELS #####
 dummy_input = torch.zeros([batch_size, 3, 224, 224])
 torch.onnx.export(trained_model, dummy_input.to(DEVICE), "model.onnx")
+
 model_scripted = torch.jit.script(trained_model)
 model_scripted.save("trained_model_scripted.pt")
+
 torch.save(trained_model.state_dict(), "model_state_dict.pth")
+
 artifact = wandb.Artifact("model", type="model")
 artifact.add_file("model_state_dict.pth")
 wandb.run.log_artifact(artifact)
